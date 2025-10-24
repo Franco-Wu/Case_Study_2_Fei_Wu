@@ -96,7 +96,6 @@ grid on
 
 %%%
 % Simulate with large h:
-
 % TODO: *************************************************************
 h = 0.0006;
 t_end = 5e-3;
@@ -121,14 +120,69 @@ grid on
 % sharp edges. If the value of h is small, Matlab updates the value of
 % voltage at a smaller increment of time, hence, storing more data points,
 % allowing the curve to be smoother without sharp edges. 
+
+% Does the charging behavior of a "real" capacitor change as a function of your choice of h?
+% No, the charging behavior of a "real" capactiro does not change as a
+% function of my decision of h. This is becuse the "real" capacitor's charing
+% behavior is only dependent on its Resistance and Capacitance, not on h.
+% Changing h only affects how accurately our MATLAB siimulation predicts
+% the behavior, it does not change how the physical circuit charges. 
 % *******************************************************************
 
 %%%
 % Compare charging curves:
-
 % TODO: *************************************************************
-% (Replace this comment with code)
-% (Add response here)
+h1 = 0.00001; % accurate choice of h
+t_end_1 = 5e-3;
+t1 = 0:h1:t_end_1;
+V_in1 = ones(1,numel(t1));
+[vC_1, vR_1] = simRCvoltages(V_in1,V_C0,R,C,h1);
+
+h2 = 0.0006; % inaccurate choice of h
+t_end_2 = 5e-3;
+t2 = 0:h2:t_end_2;
+V_in2 = ones(1,numel(t2));
+[vC_2, vR_2] = simRCvoltages(V_in2,V_C0,R,C,h2);
+
+figure
+subplot(3,1,1)
+plot(t1, vC_1,'LineWidth', 1.6)
+hold on
+plot(t1,V_in1,'LineWidth', 1.6)
+xlabel('time (s)')
+ylabel('voltage (V)')
+xlim([0 t_end_1])
+ylim([0 1.05])
+title('Accurate value of h');
+legend('V_{in}','V_C','Location','best')
+grid on
+
+subplot(3,1,2)
+plot(t, vC_2,'LineWidth', 1.6)
+hold on
+plot(t,V_in2,'LineWidth', 1.6)
+xlabel('time (s)')
+ylabel('voltage (V)')
+xlim([0 t_end_2])
+ylim([0 1.05])
+title('inaccurate value of h');
+legend('V_{in}','V_C','Location','best')
+grid on
+
+subplot(3,1,3)
+% Compute the continuous theoretical charging curve
+t_theory = linspace(0, 5e-3, 1000);          % smooth time vector
+V_C_theory = 1 - exp(-t_theory/(R*C));       % theoretical RC charging formula
+
+plot(t_theory, V_C_theory, 'k', 'LineWidth', 1.8); hold on;   % theory (smooth)
+xlabel('time (s)')
+ylabel('voltage (V)')
+xlim([0 5e-3])
+ylim([0 1.05])
+title('Theoretical Charing Curve')
+legend('Theoretical 1 - e^{-t/RC}', 'Accurate h = 0.00001', 'Inaccurate h = 0.0006', 'Location','southeast')
+grid on
+% inaccurate choice of h will make the curve have sharp edges
 % *******************************************************************
 
 
@@ -137,8 +191,9 @@ grid on
 % called the RC time constant of the circuit?
 
 % TODO: *************************************************************
-% (Replace this comment with code)
-% (Add response here)
+% The time constant τ = R*C sets how quickly the capacitor voltage changes.
+% It is the time for V_C(t) to reach about 63.2% of its final value after a step input.
+% The charging follows V_C(t) = V_in*(1 - exp(-t/(R*C))).
 % *******************************************************************
 
 %% Helper functions "simRCvoltages": [V_C, V_R] = simRCvoltages(V_in,V_C0,R,C,h)
@@ -153,11 +208,11 @@ V_C = zeros(1,numel(t));
 V_C(1) = V_C0;
 V_R = zeros(1,numel(t));
 
-for i = 1:numel(t)-1
-    V_R(i) = V_in(i)-V_C(i);
-    V_C(i+1) = (1-(h/(R*C)))*V_C(i) + (h/(R*C))*V_in(i);
-end
-V_R(end) = V_in(end) - V_C(end);% fills in last resistor value
+    for i = 1:numel(t)-1
+        V_R(i) = V_in(i)-V_C(i);
+        V_C(i+1) = (1-(h/(R*C)))*V_C(i) + (h/(R*C))*V_in(i);
+    end
+    V_R(end) = V_in(end) - V_C(end);% fills in last resistor value
 
 end
 % *******************************************************************
