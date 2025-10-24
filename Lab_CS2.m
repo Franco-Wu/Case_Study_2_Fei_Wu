@@ -45,50 +45,40 @@ close all;  % uncomment this line if you do not want all figure windows to close
 
 % TODO: *************************************************************
 % Parameters:
-R = 1e3; % Resistor 1 kΩ
-C = 1e-6; % Capacitor 1 µF 
-h = R*C/10000; % interval between updates, how frequent matlab updates the voltages
-tEnd = 5e-3; % 5 ms, RC represens how fast the capacitor changes
 
-t = 0:h:tEnd; % time interval from 0s to tEnd in steps of h
-vin = ones(size(t)); % input voltage, constant 1V
-vC = zeros(size(t)); % voltage across the capacitor
-vR = zeros(size(t)); 
-vC(1) = 0; % capactiro starts1 uncharged
+R = 1e3; % Resistor of 1 kilo ohms
+C = 1e-6; % capacitor 1 miu farad (coloumb per volt)
+h = 0.00001; % interval between updates, how frequent matlab updates the voltage
+V_C0 = 0; % capacitor starts uncharged
+t_end = 5e-3;
+t = 0:h:t_end;
+V_in = ones(1,numel(t));
 
-for k = 1:length(t)-1
-    vR(k) = vin(k) - vC(k); % (8)
-    vC(k+1) = (1 - h/(R*C))*vC(k) + (h/(R*C))*vin(k); % (10)
-end
-vR(end) = vin(end) - vC(end); % fills in last resistor value
-
-% Plot to match the example style
-figure;
-plot(t, vin,'LineWidth', 1.6); 
-hold on;
-plot(t, vC,'LineWidth', 1.6);
-xlabel('time (s)'); ylabel('voltage (V)');
-legend('V_{in}','V_C','Location','southeast');
-title('Voltage measured across a capacitor in response to a constant 1 V input');
-xlim([0 tEnd]); ylim([0 1]); % x an y axis limits
-grid on; 
 % *******************************************************************
 
 %%%
 % Simulate with small h: 
 % (please finish the function 'simRCvoltages' in the end and use it here.)
-
 % TODO: *************************************************************
 % (Replace this comment with code)
-% (Add response here)
+[vC, vR] = simRCvoltages(V_in,V_C0,R,C,h);
 % *******************************************************************
 
 %%%
 % Plot the figure:
 
 % TODO: *************************************************************
-% (Replace this comment with code)
-% (Add response here)
+figure
+plot(t, vC,'LineWidth', 1.6)
+hold on
+plot(t,V_in,'LineWidth', 1.6)
+xlabel('time (s)')
+ylabel('voltage (V)')
+xlim([0 t_end])
+ylim([0 1.05])
+title('Voltage measured across a capacitor in response to a constant 1 V input');
+legend('V_{in}','V_C','Location','best')
+grid on
 % *******************************************************************
 
 
@@ -108,8 +98,29 @@ grid on;
 % Simulate with large h:
 
 % TODO: *************************************************************
-% (Replace this comment with code)
-% (Add response here)
+h = 0.0006;
+t_end = 5e-3;
+t = 0:h:t_end;
+V_in = ones(1,numel(t));
+[vC, vR] = simRCvoltages(V_in,V_C0,R,C,h);
+
+figure
+plot(t, vC,'LineWidth', 1.6)
+hold on
+plot(t,V_in,'LineWidth', 1.6)
+xlabel('time (s)')
+ylabel('voltage (V)')
+xlim([0 t_end])
+ylim([0 1.05])
+title('Voltage measured across a capacitor in response to a constant 1 V input');
+legend('V_{in}','V_C','Location','best')
+grid on
+% How does your simulation's prediction change? 
+% If the value of h is large, Matlab seems to be updating the voltage at a
+% greater time interval, hence, causing the curve to exhibit relatively
+% sharp edges. If the value of h is small, Matlab updates the value of
+% voltage at a smaller increment of time, hence, storing more data points,
+% allowing the curve to be smoother without sharp edges. 
 % *******************************************************************
 
 %%%
@@ -136,5 +147,17 @@ grid on;
 % (Replace this comment with code)
 % (Add response here)
 function [V_C, V_R] = simRCvoltages(V_in,V_C0,R,C,h)
+t_end = 5e-3;
+t = 0:h:t_end;
+V_C = zeros(1,numel(t));
+V_C(1) = V_C0;
+V_R = zeros(1,numel(t));
+
+for i = 1:numel(t)-1
+    V_R(i) = V_in(i)-V_C(i);
+    V_C(i+1) = (1-(h/(R*C)))*V_C(i) + (h/(R*C))*V_in(i);
+end
+V_R(end) = V_in(end) - V_C(end);% fills in last resistor value
+
 end
 % *******************************************************************
