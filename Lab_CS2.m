@@ -6,7 +6,7 @@
 % 20 pts. total: 10 for programming and correct responses, 5 for
 % programming style, 5 for presentation
 %
-% *Name: Minghui Wu (Franco)*
+% *Name: Minghui Wu (Franco) and Feiyu Ren*
 %
 
 %% Instructions
@@ -44,7 +44,34 @@ close all;  % uncomment this line if you do not want all figure windows to close
 % Set up simulation parameters:
 
 % TODO: *************************************************************
+% Parameters:
+R = 1e3; % Resistor 1 kΩ
+C = 1e-6; % Capacitor 1 µF 
+h = R*C/10000; % (small & accurate) how frequent matlab updates the voltages
+tEnd = 5e-3; % 5 ms, RC represens how fast the capacitor changes
 
+t = 0:h:tEnd; % time interval from 0s to tEnd
+vin = ones(size(t)); % input voltage
+vC = zeros(size(t)); % voltage across the capacitor
+vR = zeros(size(t)); 
+vC(1) = 0; % first uncharged
+
+for k = 1:length(t)-1
+    vR(k) = vin(k) - vC(k); % (8)
+    vC(k+1) = (1 - h/(R*C))*vC(k) + (h/(R*C))*vin(k); % (10)
+end
+vR(end) = vin(end) - vC(end);
+
+% Plot to match the example style
+figure;
+plot(t, vin,'LineWidth', 1.6); 
+hold on;
+plot(t, vC,'LineWidth', 1.6);
+xlabel('time (s)'); ylabel('voltage (V)');
+legend('V_{in}','V_C','Location','southeast');
+title('Voltage measured across a capacitor in response to a constant 1 V input');
+xlim([0 tEnd]); ylim([0 1]); % x an y axis limits
+grid on; 
 % *******************************************************************
 
 %%%
