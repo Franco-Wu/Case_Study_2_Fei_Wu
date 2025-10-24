@@ -47,20 +47,20 @@ close all;  % uncomment this line if you do not want all figure windows to close
 % Parameters:
 R = 1e3; % Resistor 1 kΩ
 C = 1e-6; % Capacitor 1 µF 
-h = R*C/10000; % (small & accurate) how frequent matlab updates the voltages
+h = R*C/10000; % interval between updates, how frequent matlab updates the voltages
 tEnd = 5e-3; % 5 ms, RC represens how fast the capacitor changes
 
-t = 0:h:tEnd; % time interval from 0s to tEnd
-vin = ones(size(t)); % input voltage
+t = 0:h:tEnd; % time interval from 0s to tEnd in steps of h
+vin = ones(size(t)); % input voltage, constant 1V
 vC = zeros(size(t)); % voltage across the capacitor
 vR = zeros(size(t)); 
-vC(1) = 0; % first uncharged
+vC(1) = 0; % capactiro starts1 uncharged
 
 for k = 1:length(t)-1
     vR(k) = vin(k) - vC(k); % (8)
     vC(k+1) = (1 - h/(R*C))*vC(k) + (h/(R*C))*vin(k); % (10)
 end
-vR(end) = vin(end) - vC(end);
+vR(end) = vin(end) - vC(end); % fills in last resistor value
 
 % Plot to match the example style
 figure;
