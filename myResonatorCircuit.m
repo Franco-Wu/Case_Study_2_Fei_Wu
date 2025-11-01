@@ -30,11 +30,12 @@ it ring for ~5 seconds?
 
 function Vout = myResonatorCircuit(Vin,h)
 
-R = 100; % Resistance of 100 ohms
-L = 100e-3; % Inductance of 100mH
-C = 0.1e-6; % Capacitance of 0.11microF
+% ----- Design choices (tuning-fork) -----
+C = 1e-6; % in Farads, Capacitance of 1.0 microF
+f0 = 440; %Hz
+L = 1/((2*pi*f0)^2*C); % Henries  -> ~0.1006 H
+R = 1e-2; %ohm 
 
-% --- Simulation setup ---
 N = numel(Vin); % number of V input discrete time samples
 Vout = zeros(N,1); % empty output row vector, for future storate of output when given input
 
@@ -55,4 +56,18 @@ for k = 1:N
     i=(i+(h/L)*(Vin(k)-V_C) ) / (1 + (h/L)*R); % eq(16)+KVL with implicit R term for i_{k+1}
 end
 
-end 
+% plot output voltage vs time
+Fs = 1/h; % sampling frequency
+t = (0:N-1)'/Fs;% time vector
+figure;
+plot(t, Vout, 'LineWidth', 1.4)
+xlabel('Time (s)'), ylabel('Output Voltage (V)')
+title('RLC Resonator Ringing Response')
+grid on
+xlim([0, 5])            
+
+end
+
+
+
+

@@ -1,7 +1,7 @@
 %% Case study 3: Circuits as Resonators, Sensors, and Filters
 % *ESE 105* 
 %
-% *Name: FILL IN HERE*
+% *Name: Minghui (Franco) Wu and Feiyu Ren*
 
 clear;
 close all;
