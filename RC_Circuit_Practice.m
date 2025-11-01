@@ -6,7 +6,7 @@
 % 20 pts. total: 10 for programming and correct responses, 5 for
 % programming style, 5 for presentation
 %
-% *Name: Minghui Wu (Franco) and Feiyu Ren*
+% *Name: Minghui Wu (Franco)*
 %
 
 %% Instructions
