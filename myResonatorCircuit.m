@@ -44,8 +44,15 @@ Vout = zeros(N,1); % empty output row vector, for future storate of output when 
 V_C = 0; % Capacitor initially uncharged
 i = 0; % current initially 0
 
-% Matrix A and Vector B from equations 5,7, 16
 
+% Matrix A vector B 
+denom = 1+(h/L)*R;
+A = [(1 - (h*h)/(denom*L*C)),  h/(C*denom); 
+     -h/(denom*L),              1/denom];
+
+B = [(h*h)/(denom*L*C); h/denom*C];
+
+%{ 
 for k = 1:N
     V_C = V_C + (h/C)*i; %eq 5, updates capacitor voltage, more current --> more charge flows --> higher voltage    
     % Eq. (7):  vR = R*i   → output voltage
@@ -55,6 +62,14 @@ for k = 1:N
 
     i=(i+(h/L)*(Vin(k)-V_C) ) / (1 + (h/L)*R); % eq(16)+KVL with implicit R term for i_{k+1}
 end
+%}
+
+x = [0; 0]; % x = [V_C; i]
+    for k = 1:N
+        Vout(k) = R * x(2);%eq7, V_R = iR, output voltage = voltage across the resistor  
+        % output of resonator circuit, the one that is to be listened and plotted
+        x = A*x + B*Vin(k); % xk+1 = Axk + Buk
+    end
 
 % plot output voltage vs time
 Fs = 1/h; % sampling frequency
