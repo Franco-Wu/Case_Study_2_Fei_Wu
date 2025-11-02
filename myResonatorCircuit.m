@@ -33,8 +33,8 @@ function Vout = myResonatorCircuit(Vin,h)
 % ----- Design choices (tuning-fork) -----
 C = 1e-6; % in Farads, Capacitance of 1.0 microF
 f0 = 440; %Hz
-L = 1/((2*pi*f0)^2*C); % Henries  -> ~0.1006 H
-R = 1e-2; %ohm 
+L = 1/((2*pi*f0)^2*C); % Henries  -> 0.1006 H
+R = 0.05; %ohm 
 
 N = numel(Vin); % number of V input discrete time samples
 Vout = zeros(N,1); % empty output row vector, for future storate of output when given input
@@ -44,7 +44,7 @@ Vout = zeros(N,1); % empty output row vector, for future storate of output when 
 V_C = 0; % Capacitor initially uncharged
 i = 0; % current initially 0
 
-Vout(1) = Vin(1); % Initial output voltage is the same as input
+% Matrix A and Vector B from equations 5,7, 16
 
 for k = 1:N
     V_C = V_C + (h/C)*i; %eq 5, updates capacitor voltage, more current --> more charge flows --> higher voltage    
@@ -64,7 +64,7 @@ plot(t, Vout, 'LineWidth', 1.4)
 xlabel('Time (s)'), ylabel('Output Voltage (V)')
 title('RLC Resonator Ringing Response')
 grid on
-xlim([0, 5])            
+xlim([0, 5]) 
 
 end
 

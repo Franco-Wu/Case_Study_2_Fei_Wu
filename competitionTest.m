@@ -10,7 +10,7 @@ Fs = 192000;   % Sampling frequency, Hz
 
 %% Task 1: Tuning fork
 Vpulse = zeros(length(0:(1/Fs):5),1);     % 5-second duration
-Vpulse(2) = 1e-100;
+Vpulse(2) = 1;
 
 Vringing = myResonatorCircuit(Vpulse,1/Fs);
 soundsc(Vringing,Fs);
