@@ -17,54 +17,65 @@
 
 function Vout = myFilterCircuit(Vin,h)
 
-N = numel(Vin); % number of V input discrete time samples
-Vout = zeros(N,1); % empty output row vector, for future storate of output when given input
+Vin = Vin.';
 
-% filter out 60Hz
-C1 = 1e-6; % F
-f0_60 = 60; % Hz
-L1 = 1 / ((2*pi*f0_60)^2 * C1); % H (resonates at approximately 60 Hz)
-R1 = 8; % ohms (small resistance --> narrow notch)
-V_C1 = 0; % capacitor voltage
-i1 = 0; % inductor current
-vR1 = zeros(N,1);% store resistor voltage
-for k = 1:N
-    V_C1 = V_C1 + (h/C1)*i1; % update capacitor voltage
-    vR1(k) = R1 * i1;% voltage across R (band-pass)
-    i1 = ( i1 + (h/L1)*(Vin(k) - V_C1) ) / (1 + (h/L1)*R1); % semi-implicit update
-end
-y1 = Vin - vR1; % subtract 60Hz noise
+% denoise 60 Hz
+fHum = 60;
+bwHum = 6;
+C_hum = 0.47e-6;                                        
+L_hum = 1 / ((2*pi*fHum)^2 * C_hum);                  
+R_hum = 2*pi*L_hum*bwHum;
 
-% filter out 120 Hz hum
-C2 = 1e-6; 
-f0_120 = 120;
-L2 = 1 / ((2*pi*f0_120)^2 * C2);
-R2 = 6; % ohms (small resistance --> narrow notch)
+% A = [1,(h/C_hum);(-h/L_hum),(1-(R_hum*h/L_hum))];
+% B = [0;(h/L_hum)];
 
-V_C2 = 0;
-i2 = 0;
-vR2 = zeros(N,1);
+alpha = 1+(h/L_hum)*R_hum;
+A = [(1 - (h*h)/(alpha*L_hum*C_hum)),h/(C_hum*alpha); -h/(alpha*L_hum),1/alpha];
+B = [(h*h)/(alpha*L_hum*C_hum); h/(alpha*L_hum)];
 
-for k = 1:N
-    V_C2 = V_C2 + (h/C2)*i2;
-    vR2(k) = R2 * i2;
-    i2 = ( i2 + (h/L2)*(y1(k) - V_C2) ) / (1 + (h/L2)*R2);
+N = numel(Vin);
+x = zeros(2, N);
+
+for k = 1:N-1
+    x(:,k+1) = A*x(:,k) + B*Vin(k);
 end
 
-y2 = y1 - vR2; % subtract 120Hz harmonic noise of 60Hz
+i = x(2,:);
+V_hum = i*R_hum;
+Vin2 = Vin - V_hum;
 
+% denoise 120 Hz
+f2 = 120;
+bw2 = 12;
+C_2 = 0.47e-6;                                        
+L_2 = 1 / ((2*pi*f2)^2 * C_2);                  
+R_2 = 2*pi*L_2*bw2;
 
-% Low-pass filter to remove high-frequency hiss
-R3 = 50;% ohms
-L3 = 0.0033; % henries
-C3 = 3.3e-6;% farads (sets low-pass cutoff near few kHz)
-V_C3 = 0;
-i3 = 0;
+denom = 1+(h/L_2)*R_2;
+A = [(1 - (h*h)/(denom*L_2*C_2)),h/(C_2*denom); -h/(denom*L_2),1/denom];
+B = [(h*h)/(denom*L_2*C_2); h/(denom*L_2)];
 
-for k = 1:N
-    Vout(k) = V_C3;
-    V_C3 = V_C3 + (h/C3)*i3; 
-    i3 = ( i3 + (h/L3)*(y2(k) - V_C3) ) / (1 + (h/L3)*R3);
+N = numel(Vin2);
+x = zeros(2, N);
+
+for k = 1:N-1
+    x(:,k+1) = A*x(:,k) + B*Vin2(k);
 end
 
+i = x(2,:);
+V_120 = i*R_2;
+Vin3 = Vin2 - V_120;
+
+% denoise high frequency
+fHigh = 666;
+C_high = 0.22e-6;                                        
+R_high = 1 / (2*pi*fHigh*C_high); 
+
+V_C = zeros(1,N);
+
+    for k = 1:N-1
+        V_C(k+1) = (1-(h/(R_high*C_high)))*V_C(k) + (h/(R_high*C_high))*Vin3(k);
+    end
+
+Vout = V_C;
 end
